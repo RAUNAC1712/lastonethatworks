@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sensor Data</title>
+  <title>Real-Time Sensor Data with Graphs</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>Real-Time Sensor Data</h1>
   <p>Temperature: <span id="temp"></span> °C</p>
   <p>Humidity: <span id="humid"></span> %</p>
-
+  <canvas id="tempChart" width="400" height="200"></canvas>
+  <canvas id="humidChart" width="400" height="200"></canvas>
   <script src="app.js"></script>
 </body>
 </html>
