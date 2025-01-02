@@ -4,12 +4,12 @@ const firebaseURL = "https://lastgoal-a90d1-default-rtdb.asia-southeast1.firebas
 const tempElem = document.getElementById("temp");
 const humidElem = document.getElementById("humid");
 
-// Initialize datasets
-let tempData = [];
-let humidData = [];
-let labels = []; // Time labels for the X-axis
+// Initialize datasets for graphs
+const tempData = [];
+const humidData = [];
+const labels = []; // Labels for time
 
-// Create the temperature chart
+// Create charts
 const tempChart = new Chart(document.getElementById("tempChart"), {
   type: "line",
   data: {
@@ -18,43 +18,22 @@ const tempChart = new Chart(document.getElementById("tempChart"), {
       label: "Temperature (°C)",
       data: tempData,
       borderColor: "red",
-      fill: false,
+      fill: false
     }]
   },
   options: {
-    responsive: true,
     scales: {
       x: {
-        type: "time",
-        time: {
-          unit: "second",
-        },
         title: { display: true, text: "Time" },
       },
       y: {
         title: { display: true, text: "Temperature (°C)" },
-        beginAtZero: false,
-        suggestedMin: 15, // Lower range for centered graph
-        suggestedMax: 40, // Higher range for centered graph
-      }
-    },
-    plugins: {
-      zoom: {
-        pan: {
-          enabled: true,
-          mode: "x",
-        },
-        zoom: {
-          wheel: { enabled: true },
-          pinch: { enabled: true },
-          mode: "x",
-        }
+        beginAtZero: true
       }
     }
   }
 });
 
-// Create the humidity chart
 const humidChart = new Chart(document.getElementById("humidChart"), {
   type: "line",
   data: {
@@ -63,66 +42,46 @@ const humidChart = new Chart(document.getElementById("humidChart"), {
       label: "Humidity (%)",
       data: humidData,
       borderColor: "blue",
-      fill: false,
+      fill: false
     }]
   },
   options: {
-    responsive: true,
     scales: {
       x: {
-        type: "time",
-        time: {
-          unit: "second",
-        },
         title: { display: true, text: "Time" },
       },
       y: {
         title: { display: true, text: "Humidity (%)" },
-        beginAtZero: false,
-        suggestedMin: 30, // Center graph lower bound
-        suggestedMax: 70, // Center graph upper bound
-      }
-    },
-    plugins: {
-      zoom: {
-        pan: {
-          enabled: true,
-          mode: "x",
-        },
-        zoom: {
-          wheel: { enabled: true },
-          pinch: { enabled: true },
-          mode: "x",
-        }
+        beginAtZero: true
       }
     }
   }
 });
 
-// Fetch and update data
+// Function to fetch data from Firebase
 async function fetchData() {
   try {
     const response = await fetch(firebaseURL);
     const data = await response.json();
 
     if (data) {
-      // Update current readings
+      // Update DOM
       tempElem.textContent = data.temp || "N/A";
       humidElem.textContent = data.humid || "N/A";
 
       // Get the current time
-      const currentTime = new Date();
+      const currentTime = new Date().toLocaleTimeString();
 
       // Update datasets
-      tempData.push({ x: currentTime, y: data.temp || 0 });
-      humidData.push({ x: currentTime, y: data.humid || 0 });
-      labels.push(currentTime);
+      if (tempData.length > 10) {
+        tempData.shift();
+        humidData.shift();
+        labels.shift();
+      }
 
-      // Keep only last 2 minutes of data
-      const twoMinutesAgo = new Date(currentTime.getTime() - 2 * 60 * 1000);
-      tempData = tempData.filter(point => point.x >= twoMinutesAgo);
-      humidData = humidData.filter(point => point.x >= twoMinutesAgo);
-      labels = labels.filter(label => label >= twoMinutesAgo);
+      tempData.push(data.temp || 0);
+      humidData.push(data.humid || 0);
+      labels.push(currentTime);
 
       // Update charts
       tempChart.update();
